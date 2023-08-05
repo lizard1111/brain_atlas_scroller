@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Brain Viewer</title>
+    <style>
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        .svg-container {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            bottom: 20px;
+            left: 20px;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            display: flex;
+            align-items: flex-start;
+            scroll-snap-type: x mandatory mandatory;
+        }
+
+        .svg-item {
+            flex-shrink: 0;
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+            position: relative;
+            transition: transform 0.s ease-in-out;
+        }
+
+        .slice-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 40px;
+            pointer-events: none;
+        }
+
+        .slider-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slider {
+            width: 100px;
+        }
+    </style>
+    
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const svgContainer = document.querySelector('#svgContainer');
+            const svgPath = 'svg2_viewbox/'; // Update with the relative path to your SVG folder
+            const numSVGs = 527 ; // Number of SVGs to load
+            let autoScrollSpeed = 10; // Speed in milliseconds (lower value = faster scrolling)
+            let autoScrollInterval;
+            let isPlaying = false;
+
+            for (let i = numSVGs; i > 0; i--) {
+                const svgElement = document.createElement('div');
+                svgElement.classList.add('svg-item');
+
+                fetch(`${svgPath}P56_Annotation_${(i-1).toString().padStart(4, '0')}.svg`)
+                    .then(response => response.text())
+                    .then(data => {
+                        svgElement.innerHTML = data;
+                        const sliceNumberElement = document.createElement('div');
+                        sliceNumberElement.classList.add('slice-number');
+                        sliceNumberElement.textContent = `Slice #${i}`;
+                        svgElement.appendChild(sliceNumberElement);
+                    });
+
+                svgContainer.appendChild(svgElement);
+            }
+
+            const svgItems = Array.from(svgContainer.querySelectorAll('.svg-item'));
+            let currentIndex = 0;
+
+            function showCurrentSVG() {
+                svgItems[currentIndex].style.display = 'block';
+            }
+
+            function hideCurrentSVG() {
+                svgItems[currentIndex].style.display = 'none';
+            }
+
+            function showNextSVG() {
+                hideCurrentSVG();
+                currentIndex = (currentIndex + 1) % numSVGs;
+                showCurrentSVG();
+            }
+
+            function showPreviousSVG() {
+                hideCurrentSVG();
+                if (currentIndex === 0) {
+                    currentIndex = numSVGs - 1;
+                } else {
+                    currentIndex--;
+                }
+                showCurrentSVG();
+            }
+
+            function startAutoScroll() {
+                autoScrollInterval = setInterval(() => {
+                    if (isPlaying) {
+                        showPreviousSVG();
+                    }
+                }, autoScrollSpeed);
+            }
+
+            function pauseAutoScroll() {
+                clearInterval(autoScrollInterval);
+            }
+
+            showCurrentSVG();
+            startAutoScroll();
+
+            function handleScroll(event) {
+                event.preventDefault();
+                const delta = Math.sign(event.deltaY);
+                if (delta > 0) {
+                    showNextSVG();
+                } else if (delta < 0) {
+                    showPreviousSVG();
+                }
+            }
+
+            svgContainer.addEventListener('wheel', handleScroll);
+
+            // Slider functionality
+            const sliderContainer = document.querySelector('.slider-container');
+            const slider = document.querySelector('.slider');
+
+            slider.addEventListener('input', function() {
+                const sliderValue = this.value;
+                autoScrollSpeed = 60 - (2 * sliderValue); // Adjust the formula as needed to increase speed
+                clearInterval(autoScrollInterval);
+                startAutoScroll();
+            });
+
+            function togglePlayPause() {
+                isPlaying = !isPlaying;
+                if (isPlaying) {
+                    startAutoScroll();
+                } else {
+                    pauseAutoScroll();
+                }
+            }
+
+            function handleKeyPress(event) {
+                switch (event.code) {
+                    case 'Space':
+                        event.preventDefault();
+                        togglePlayPause();
+                        break;
+                    case 'ArrowUp': 
+                        event.preventDefault();
+                        if (isPlaying) togglePlayPause();
+                        showPreviousSVG();
+                        break;
+                    case 'ArrowDown':
+                        event.preventDefault();
+                        if (isPlaying) togglePlayPause();
+                        showNextSVG();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            document.addEventListener('keydown', handleKeyPress);
+        });
+    </script>
+</head>
+<body>
+    <div class="svg-container" id="svgContainer"></div>
+    <div class="slider-container">
+        <input type="range" min="0" max="30" value="0" step="1" class="slider">
+    </div>
+</body>
+</html>
