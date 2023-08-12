@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Brain Sections</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+        .brain-section {
+            fill: none;
+            stroke: rgb(255, 255, 255);
+            stroke-width: 2;
+        }
+        #brainSvg {
+            width: 200%;
+            height: 200%;
+        }
+    </style>
+</head>
+<body>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 4000" id="brainSvg">
+        <g id="rotateGroup">
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0002.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0052.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0102.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0152.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0202.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0252.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0302.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0352.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0402.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0452.svg" x="400" y="400" width="200" height="200"/></g>
+            <g><image class="brain-section" href="./528_SVGs/P56_Annotation_0502.svg" x="400" y="400" width="200" height="200"/></g>
+    <script>
+        const rotateGroup = document.getElementById('rotateGroup');
+        let angleX = 0;
+        let angleY = 0;
+        let lengthScale = 450; // Initial length
+        let panX = 0;
+        let panY = 0;
+
+        function updateTransform() {
+            // Same transform code here
+            const transform = `
+                translate(${800 + panX}, ${800 + panY})
+                rotate(${angleX}, 0, 0)
+                rotate(${angleY}, 0, 90)
+                translate(-800, -800)
+            `;
+            rotateGroup.setAttribute('transform', transform);
+        }
+
+        document.getElementById('brainSvg').addEventListener('wheel', function(e) {
+            // Same wheel code here
+        });
+
+        // Add event listeners for mouse drag (panning)
+        let isPanning = false;
+        let startX = 0;
+        let startY = 0;
+
+        document.getElementById('brainSvg').addEventListener('mousedown', function(e) {
+            if (e.metaKey || e.ctrlKey) { // Command or Ctrl key is pressed
+                isPanning = true;
+                startX = e.clientX;
+                startY = e.clientY;
+            }
+        });
+
+        window.addEventListener('mousemove', function(e) {
+            if (isPanning) {
+                panX += e.clientX - startX;
+                panY += e.clientY - startY;
+                startX = e.clientX;
+                startY = e.clientY;
+                updateTransform();
+            }
+        });
+
+        window.addEventListener('mouseup', function() {
+            isPanning = false;
+        });
+
+        updateTransform(); // Initialize the transformation
+    </script>
+</body>
+</html>
